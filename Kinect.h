@@ -1,5 +1,5 @@
-#ifndef _KINECT_H_
-#define  _KINECT_H_
+#ifndef __KINECT_H__
+#define __KINECT_H__
 
 #include <Device.h>
 
@@ -10,11 +10,11 @@ class Kinect : public Device
 public:
 	Kinect() {}
 	virtual ~Kinect(void) {}
- 
+
 public:
 	virtual int SetCameraAngle(float degree) { return API_NOT_SUPPORTED; }
 	virtual int GetCameraAngle(float& degree)  { return API_NOT_SUPPORTED; }
-	
+
 	virtual int GetSkeleton(vector<Skeleton>& output) { return API_NOT_SUPPORTED; }
 	virtual int GetSkeleton(Skeleton& output, unsigned long id)  { return API_NOT_SUPPORTED; }
 	virtual int GetSkeletonID(vector<unsigned long>& output)  { return API_NOT_SUPPORTED; }
@@ -24,6 +24,3 @@ public:
 };
 
 #endif
-
-
-

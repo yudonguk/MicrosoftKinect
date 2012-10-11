@@ -284,7 +284,7 @@ bool MicrosoftKinect::GetSKeletonNextFrame()
 
 	//½ºÄÌ·¹Åæ Á¤º¸ ¹Þ¾Æ¿À±â
 	if (mIsSkeletonTrackingMode == false
-		|| FAILED(mpNuiSensor->NuiSkeletonGetNextFrame(0, &skeletonFrame)))
+		|| FAILED(mpNuiSensor->NuiSkeletonGetNextFrame(10, &skeletonFrame)))
 	{
 		return false;
 	}
@@ -294,6 +294,8 @@ bool MicrosoftKinect::GetSKeletonNextFrame()
 	tempSkeleton.reserve(NUI_SKELETON_COUNT);
 
 	mpNuiSensor->NuiTransformSmooth(&skeletonFrame, NULL);
+
+	const float QUIET_NAN = std::numeric_limits<float>::quiet_NaN();
 
 	for (int i = 0; i < NUI_SKELETON_COUNT; i++)
 	{
@@ -307,9 +309,9 @@ bool MicrosoftKinect::GetSKeletonNextFrame()
 			{
 				if(skel.eSkeletonPositionTrackingState[index] == NUI_SKELETON_POSITION_NOT_TRACKED)
 				{
-					skeleton.joints[index].x = std::numeric_limits<float>::quiet_NaN();
-					skeleton.joints[index].y = std::numeric_limits<float>::quiet_NaN();
-					skeleton.joints[index].z = std::numeric_limits<float>::quiet_NaN();
+					skeleton.joints[index].x = QUIET_NAN;
+					skeleton.joints[index].y = QUIET_NAN;
+					skeleton.joints[index].z = QUIET_NAN;
 				}
 				else
 				{
@@ -333,9 +335,9 @@ bool MicrosoftKinect::GetSKeletonNextFrame()
 
 			for (int index = 0; index < Skeleton::JOINT_COUNT; index++)
 			{
-				skeleton.joints[index].x = std::numeric_limits<float>::quiet_NaN();
-				skeleton.joints[index].y = std::numeric_limits<float>::quiet_NaN();
-				skeleton.joints[index].z = std::numeric_limits<float>::quiet_NaN();
+				skeleton.joints[index].x = QUIET_NAN;
+				skeleton.joints[index].y = QUIET_NAN;
+				skeleton.joints[index].z = QUIET_NAN;
 			}
 
 			tempSkeleton.push_back(skeleton);
@@ -473,10 +475,9 @@ int MicrosoftKinect::GetImage( ImageFrame& image )
 	}
 
 	NUI_IMAGE_FRAME imageFrame;
-	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleColorStream, 0
+	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleColorStream, 10
 		, &imageFrame)))
 	{
-		//PrintMessage(DEBUG_MESSAGE("Can't get color stream image.").c_str());
 		OprosLockHelper lock(mLockTempImageFrame);
 		if (mTempImageFrame.width == 0 || mTempImageFrame.height == 0
 			|| mTempImageFrame.data.isNULL())
@@ -563,11 +564,9 @@ int MicrosoftKinect::GetDepthImage( DepthFrame& depth )
 	}
 
 	NUI_IMAGE_FRAME imageFrame;
-	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleDepthStream, 0
+	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleDepthStream, 10
 		, &imageFrame)))
 	{
-		//PrintMessage(DEBUG_MESSAGE("Can't get depth stream image.").c_str());
-
 		OprosLockHelper lock(mLockTempDepthFrame);
 		if (mTempDepthFrame.width == 0 || mTempDepthFrame.height == 0
 			|| mTempDepthFrame.data.isNULL())

@@ -1,13 +1,14 @@
-#ifndef _WINDLL
+#ifdef TEST_BUILD
 
 #include <iostream>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-
 #include <Property.h>
 #include <OprosMath.h>
 
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+
 #include "MicroSoftKinect.h"
+#include "debug_macro.h"
 
 Property GetProperty()
 {
@@ -30,33 +31,46 @@ int main()
 
 	if (kinect.Initialize(GetProperty()) != API_SUCCESS)
 	{
+		std::cerr << DEBUG_MESSAGE("Can't initialize MicrosoftKinect");
+		kinect.Finalize();
 		return 0;
 	}
 
-	if (kinect.Enable())
+	if (kinect.Enable() != API_SUCCESS )
 	{
+		std::cerr << DEBUG_MESSAGE("Can't initialize MicrosoftKinect");
+		kinect.Finalize();
 		return 0;
 	}
 
 	kinect.SetCameraAngle(20);
 	kinect.SetCameraAngle(-20);
 	kinect.SetCameraAngle(0);
-	
+
 	ImageFrame imageFrame;
 	DepthFrame depthFrame;
-
 	vector<Skeleton> skeletons;
-	kinect.GetImage(imageFrame);
-	kinect.GetDepthImage(depthFrame);	
 
-	IplImage* image = cvCreateImageHeader(cvSize(imageFrame.width, imageFrame.height), 8, 3);
-	IplImage* depthImage = cvCreateImage(cvSize(depthFrame.width, depthFrame.height), 8, 1);
-	IplImage* depthImageHeader = cvCreateImageHeader(cvSize(depthFrame.width, depthFrame.height), 16, 1);
-	for (;;)
+	while(kinect.GetImage(imageFrame) != API_SUCCESS || kinect.GetDepthImage(depthFrame) != API_SUCCESS)
 	{
-		kinect.GetImage(imageFrame);
-		kinect.GetDepthImage(depthFrame);
+		if (cvWaitKey(10) == VK_ESCAPE)
+		{
+			kinect.Finalize();
+			return 0;
+		}
+	}
+
+	IplImage* pImage = cvCreateImage(cvSize(imageFrame.width, imageFrame.height), 8, 3);
+	IplImage* pDepthImage = cvCreateImage(cvSize(depthFrame.width, depthFrame.height), 8, 1);
+	IplImage* pDepthImageHeader = cvCreateImageHeader(cvSize(depthFrame.width, depthFrame.height), 16, 1);
+
+	for (; cvWaitKey(10) != VK_ESCAPE;)
+	{
+		if (kinect.GetImage(imageFrame) != API_SUCCESS || kinect.GetDepthImage(depthFrame) != API_SUCCESS)
+			continue;
 		kinect.GetSkeleton(skeletons);
+
+		memcpy(pImage->imageData, &(*imageFrame.data)[0], pImage->imageSize);
 
 		if(skeletons.size() != 0)
 		{
@@ -72,13 +86,13 @@ int main()
 					resultMessage = "Not Tracked";
 					break;
 				case Skeleton::POSITION_ONLY:
-					cvCircle(image, cvPoint((int)skeleton.position.x, (int)skeleton.position.y), 5, color, 1);
+					cvCircle(pImage, cvPoint((int)skeleton.position.x, (int)skeleton.position.y), 5, color, 1);
 					resultMessage = "Position Only";
 					break;
 				case Skeleton::TRACKED:
 					for(int index = 0; index < skeleton.JOINT_COUNT; index++)
 					{
-						cvCircle(image, cvPoint((int)skeleton.joints[index].x
+						cvCircle(pImage, cvPoint((int)skeleton.joints[index].x
 							, (int)skeleton.joints[index].y), 5, color);
 					}
 					resultMessage = "Tracked";
@@ -88,28 +102,23 @@ int main()
 					break;
 				}
 
-				printf("%d : %s\r\n", skeleton.userID, resultMessage);				
+				std::cout << skeleton.userID << " : " << resultMessage << std::endl;
 			}
 		}
 
-		image->imageData = (char*)&imageFrame.data->operator[](0);
-		depthImageHeader->imageData = (char*)&depthFrame.data->operator[](0);
-		
-		cvNormalize(depthImageHeader, depthImage, 0, 0xFF, CV_MINMAX);
-			
-		cvShowImage("Kinect Camera", image);
-		cvShowImage("Kinect Depth", depthImage);
-		if (cvWaitKey(1) == 27)
-		{
-			break;
-		}
+		pDepthImageHeader->imageData = (char*)&(*depthFrame.data)[0];
+
+		cvNormalize(pDepthImageHeader, pDepthImage, 0, 0xFF, CV_MINMAX);
+
+		cvShowImage("Kinect RGB", pImage);
+		cvShowImage("Kinect Depth", pDepthImage);
 	}
 
-	cvReleaseImage(&image);
-	cvReleaseImage(&depthImage);
-	cvReleaseImageHeader(&depthImageHeader);
+	cvReleaseImage(&pImage);
+	cvReleaseImage(&pDepthImage);
+	cvReleaseImageHeader(&pDepthImageHeader);
 
-	kinect.Disable();
+	kinect.Finalize();
 
 	return 0;
 }

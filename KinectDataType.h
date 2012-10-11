@@ -1,5 +1,5 @@
-#ifndef _KINECT_DATA_TYPE_H_
-#define _KINECT_DATA_TYPE_H_
+#ifndef __KINECT_DATA_TYPE_H__
+#define __KINECT_DATA_TYPE_H__
 
 #include <cstdint>
 #include <vector>

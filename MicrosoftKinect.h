@@ -1,4 +1,5 @@
-#ifndef _MICRO_SOFT_KINECT_SDK_H_
+#ifndef __MICROSOFT_KINECT_H__
+#define __MICROSOFT_KINECT_H__
 
 #include <windows.h>
 #include <NuiApi.h>
@@ -21,18 +22,18 @@ public:
 	int GetParameter(Property &parameter);
 
 public:
-	int SetCameraAngle(float degree); //키넥트 센서 상하 각도 조절 함수
-	int GetCameraAngle(float& degree); //키넥트 센서 상하 각도 위치 리턴
-	int GetSkeleton(vector<Skeleton>& output); //전체 골격 리턴
-	int GetSkeleton(Skeleton& output, unsigned long id); //스켈레톤 ID로 특정 Skeleton 호출
-    int GetSkeletonID(vector<unsigned long>& output); //스켈레톤 ID 반환
-    int GetImage(ImageFrame& image); //컬러 이미지 반환
-    int GetDepthImage(DepthFrame& depth); //뎁스 프레임 반환
-	
+	int SetCameraAngle(float degree);
+	int GetCameraAngle(float& degree);
+	int GetSkeleton(vector<Skeleton>& output);
+	int GetSkeleton(Skeleton& output, unsigned long id);
+	int GetSkeletonID(vector<unsigned long>& output);
+	int GetImage(ImageFrame& image);
+	int GetDepthImage(DepthFrame& depth);
+
 private:
 	bool SetKinectProfile(Property& property);
-    void TransformSkeletonToDepthImage(Position& result, const Vector4& skeletonPosition);
-    bool GetSKeletonNextFrame();
+	void TransformSkeletonToDepthImage(Position& result, const Vector4& skeletonPosition);
+	bool GetSKeletonNextFrame();
 	void ConvertNuiDepthToDepth(vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount);
 	void ConvertNuiDepthToDepthUsingSSE(vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount);
 	void InitDepthConverter();
@@ -41,8 +42,8 @@ private:
 	void (MicrosoftKinect::*depthConverter)(vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount);
 
 	OprosLock mLockSkeletonList;
-    vector<Skeleton> mSkeletonList;
-	
+	vector<Skeleton> mSkeletonList;
+
 	INuiSensor* mpNuiSensor;
 
 	HANDLE mHandleDepthStream;
