@@ -11,8 +11,10 @@
 #include "OprosLockHelper.h"
 
 //Define Required Profile Name List
-#define KINECT_IMAGE_WIDTH "Width"
-#define KINECT_IMAGE_HEIGHT "Height"
+#define KINECT_COLOR_WIDTH "ColorWidth"
+#define KINECT_COLOR_HEIGHT "ColorHeight"
+#define KINECT_DEPTH_WIDTH "DepthWidth"
+#define KINECT_DEPTH_HEIGHT "DepthHeight"
 #define KINECT_NEAR_MODE "NearMode"
 #define KINECT_SKELETON_TRACKING_MODE "SkeletonTrackingMode"
 #define KINECT_INDEX "KinectIndex"
@@ -83,13 +85,16 @@ int MicrosoftKinect::Enable( void )
 		return API_SUCCESS;
 	}
 
-	if (FAILED(NuiCreateSensorByIndex(mNuiIndex, &mpNuiSensor)))
+	HRESULT errorCode;
+
+	if (FAILED(errorCode = NuiCreateSensorByIndex(mNuiIndex, &mpNuiSensor)))
 	{
+
 		PrintMessage(DEBUG_MESSAGE("Can't create Kinect").c_str());
 		return API_ERROR;
 	}
 
-	if (FAILED(mpNuiSensor->NuiInitialize((mIsSkeletonTrackingMode 
+	if (FAILED(errorCode = mpNuiSensor->NuiInitialize((mIsSkeletonTrackingMode 
 		? NUI_INITIALIZE_FLAG_USES_DEPTH_AND_PLAYER_INDEX : NUI_INITIALIZE_FLAG_USES_DEPTH)
 		| NUI_INITIALIZE_FLAG_USES_COLOR | NUI_INITIALIZE_FLAG_USES_SKELETON)))
 	{
@@ -99,7 +104,7 @@ int MicrosoftKinect::Enable( void )
 
 	if(mIsSkeletonTrackingMode == true)
 	{
-		if (FAILED(mpNuiSensor->NuiSkeletonTrackingEnable(NULL
+		if (FAILED(errorCode = mpNuiSensor->NuiSkeletonTrackingEnable(NULL
 			, NUI_SKELETON_TRACKING_FLAG_ENABLE_IN_NEAR_RANGE)))
 		{
 			PrintMessage(DEBUG_MESSAGE("Can't enable sekelton tracking mode").c_str());
@@ -108,21 +113,21 @@ int MicrosoftKinect::Enable( void )
 	}
 	else
 	{
-		if (FAILED(mpNuiSensor->NuiSkeletonTrackingDisable()))
+		if (FAILED(errorCode = mpNuiSensor->NuiSkeletonTrackingDisable()))
 		{
 			PrintMessage(DEBUG_MESSAGE("Can't disable sekelton tracking mode").c_str());
 			return API_ERROR;
 		}
 	}
 
-	if (FAILED(mpNuiSensor->NuiImageStreamOpen(NUI_IMAGE_TYPE_COLOR, mNuiColorResoultion
+	if (FAILED(errorCode = mpNuiSensor->NuiImageStreamOpen(NUI_IMAGE_TYPE_COLOR, mNuiColorResoultion
 		, 0, 2, NULL, &mHandleColorStream)))
 	{
 		PrintMessage(DEBUG_MESSAGE("Can't open corlor stream.").c_str());
 		return API_ERROR;
 	}
 
-	if (FAILED(mpNuiSensor->NuiImageStreamOpen(mIsSkeletonTrackingMode
+	if (FAILED(errorCode = mpNuiSensor->NuiImageStreamOpen(mIsSkeletonTrackingMode
 		? NUI_IMAGE_TYPE_DEPTH_AND_PLAYER_INDEX : NUI_IMAGE_TYPE_DEPTH, mNuiDepthResoultion
 		, mIsNearMode ? NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE : 0, 2, NULL, &mHandleDepthStream)))
 	{
@@ -187,15 +192,25 @@ int MicrosoftKinect::GetParameter( Property &parameter )
 {
 	std::ostringstream stringConverter;
 
-	DWORD width, height;
-	NuiImageResolutionToSize(mNuiColorResoultion, width, height);
+	DWORD colorWidth, colorHeight;
+	DWORD depthWidth, depthHeight;
+	NuiImageResolutionToSize(mNuiColorResoultion, colorWidth, colorHeight);
+	NuiImageResolutionToSize(mNuiDepthResoultion, depthWidth, depthHeight);
 
-	stringConverter << width;
-	parameter.SetValue(KINECT_IMAGE_WIDTH, stringConverter.str());
+	stringConverter << colorWidth;
+	parameter.SetValue(KINECT_COLOR_WIDTH, stringConverter.str());
 	stringConverter.str("");
 
-	stringConverter << height;
-	parameter.SetValue(KINECT_IMAGE_HEIGHT, stringConverter.str());
+	stringConverter << colorHeight;
+	parameter.SetValue(KINECT_COLOR_HEIGHT, stringConverter.str());
+	stringConverter.str("");
+
+	stringConverter << depthWidth;
+	parameter.SetValue(KINECT_DEPTH_WIDTH, stringConverter.str());
+	stringConverter.str("");
+
+	stringConverter << depthHeight;
+	parameter.SetValue(KINECT_DEPTH_HEIGHT, stringConverter.str());
 	stringConverter.str("");
 
 	stringConverter << mNuiIndex;
@@ -210,8 +225,10 @@ int MicrosoftKinect::GetParameter( Property &parameter )
 
 bool MicrosoftKinect::SetKinectProfile( Property& parameter )
 {
-	int width = 640;
-	int height = 480;
+	int colorWidth = 640;
+	int colorHeight = 480;
+	int depthWidth = 640;
+	int depthHeight = 480;
 	mIsNearMode = false;
 	mIsSkeletonTrackingMode = false;
 	mNuiIndex = 0;
@@ -224,15 +241,25 @@ bool MicrosoftKinect::SetKinectProfile( Property& parameter )
 	PrintMessage("MicrosoftKinect Profiles\r\n");
 	PrintMessage("--------------------------------\r\n");
 
-	PrintMessage("%s : ", KINECT_IMAGE_WIDTH);
-	if (parameter.FindName(KINECT_IMAGE_WIDTH) == true)
-		width = atoi(parameter.GetValue(KINECT_IMAGE_WIDTH).c_str());
-	PrintMessage("%d\r\n", width);
+	PrintMessage("%s : ", KINECT_COLOR_WIDTH);
+	if (parameter.FindName(KINECT_COLOR_WIDTH) == true)
+		colorWidth = atoi(parameter.GetValue(KINECT_COLOR_WIDTH).c_str());
+	PrintMessage("%d\r\n", colorWidth);
 
-	PrintMessage("%s : ", KINECT_IMAGE_HEIGHT);
-	if (parameter.FindName(KINECT_IMAGE_HEIGHT) == true)
-		height = atoi(parameter.GetValue(KINECT_IMAGE_HEIGHT).c_str());
-	PrintMessage("%d\r\n", height);
+	PrintMessage("%s : ", KINECT_COLOR_HEIGHT);
+	if (parameter.FindName(KINECT_COLOR_HEIGHT) == true)
+		colorHeight = atoi(parameter.GetValue(KINECT_COLOR_HEIGHT).c_str());
+	PrintMessage("%d\r\n", colorHeight);
+
+	PrintMessage("%s : ", KINECT_DEPTH_WIDTH);
+	if (parameter.FindName(KINECT_DEPTH_WIDTH) == true)
+		depthWidth = atoi(parameter.GetValue(KINECT_DEPTH_WIDTH).c_str());
+	PrintMessage("%d\r\n", depthWidth);
+
+	PrintMessage("%s : ", KINECT_DEPTH_HEIGHT);
+	if (parameter.FindName(KINECT_DEPTH_HEIGHT) == true)
+		depthHeight = atoi(parameter.GetValue(KINECT_DEPTH_HEIGHT).c_str());
+	PrintMessage("%d\r\n", depthHeight);
 
 	PrintMessage("%s : ", KINECT_INDEX);
 	if (parameter.FindName(KINECT_INDEX) == true)
@@ -250,20 +277,37 @@ bool MicrosoftKinect::SetKinectProfile( Property& parameter )
 	PrintMessage("%s\r\n", mIsSkeletonTrackingMode ? "true" : "false");
 
 
-	if (width == 640 && height == 480)
+	if (colorWidth == 640 && colorHeight == 480)
 	{
 		mNuiColorResoultion = NUI_IMAGE_RESOLUTION_640x480;
-		mNuiDepthResoultion = NUI_IMAGE_RESOLUTION_640x480;
 	}
-	else if(width == 1280 && height == 960)
+	else if(colorWidth == 1280 && colorHeight == 960)
 	{
 		mNuiColorResoultion = NUI_IMAGE_RESOLUTION_1280x960;
-		mNuiDepthResoultion = NUI_IMAGE_RESOLUTION_640x480;
 	}
 	else
 	{
-		PrintMessage("Width and Height is invalid value.\r\n");
+		PrintMessage(KINECT_COLOR_WIDTH " and " KINECT_COLOR_HEIGHT " is invalid value.\r\n");
 		PrintMessage("Valid values are 640x480 and 1280x960.\r\n");
+		return false;
+	}
+
+	if (depthWidth == 640 && depthHeight == 480)
+	{
+		mNuiDepthResoultion = NUI_IMAGE_RESOLUTION_640x480;
+	}
+	else if (depthWidth == 320 && depthHeight == 240)
+	{
+		mNuiDepthResoultion = NUI_IMAGE_RESOLUTION_320x240;
+	}
+	else if (depthWidth == 80 && depthHeight == 60)
+	{
+		mNuiDepthResoultion = NUI_IMAGE_RESOLUTION_80x60;
+	}
+	else
+	{
+		PrintMessage(KINECT_DEPTH_WIDTH " and " KINECT_DEPTH_HEIGHT " is invalid value.\r\n");
+		PrintMessage("Valid values are 80x60, 320x240 and 640x480.\r\n");
 		return false;
 	}
 
@@ -475,7 +519,7 @@ int MicrosoftKinect::GetImage( ImageFrame& image )
 	}
 
 	NUI_IMAGE_FRAME imageFrame;
-	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleColorStream, 0
+	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleColorStream, 30
 		, &imageFrame)))
 	{
 		OprosLockHelper lock(mLockTempImageFrame);
@@ -564,9 +608,10 @@ int MicrosoftKinect::GetDepthImage( DepthFrame& depth )
 	}
 
 	NUI_IMAGE_FRAME imageFrame;
-	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleDepthStream, 0
+	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleDepthStream, 30
 		, &imageFrame)))
 	{
+		return API_ERROR;
 		OprosLockHelper lock(mLockTempDepthFrame);
 		if (mTempDepthFrame.width == 0 || mTempDepthFrame.height == 0
 			|| mTempDepthFrame.data.isNULL())
@@ -590,7 +635,7 @@ int MicrosoftKinect::GetDepthImage( DepthFrame& depth )
 
 		pFrameTexture->UnlockRect(0);
 		mpNuiSensor->NuiImageStreamReleaseFrame(mHandleDepthStream, &imageFrame);
-
+		return API_ERROR;
 		OprosLockHelper lock(mLockTempDepthFrame);
 		if (mTempDepthFrame.width == 0 || mTempDepthFrame.height == 0
 			|| mTempDepthFrame.data.isNULL())
@@ -703,8 +748,10 @@ OprosApi *GetAPI()
 }
 
 //Undefine Required Profile Name List
-#undef KINECT_IMAGE_WIDTH
-#undef KINECT_IMAGE_HEIGHT
+#undef KINECT_COLOR_WIDTH
+#undef KINECT_COLOR_HEIGHT
+#undef KINECT_DEPTH_WIDTH
+#undef KINECT_DEPTH_HEIGHT
 #undef KINECT_INDEX
 #undef KINECT_NEAR_MODE
 #undef KINECT_SKELETON_TRACKING_MODE

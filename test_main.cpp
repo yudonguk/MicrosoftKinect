@@ -14,8 +14,10 @@ Property GetProperty()
 {
 	Property property;
 
-	property.SetValue("Width", "640");
-	property.SetValue("Height", "480");
+	property.SetValue("ColorWidth", "640");
+	property.SetValue("ColorHeight", "480");
+	property.SetValue("DepthWidth", "640");
+	property.SetValue("DepthHeight", "480");
 
 	property.SetValue("KinectIndex", "0");
 	property.SetValue("NearMode", "true");

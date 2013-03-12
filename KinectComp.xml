@@ -31,11 +31,15 @@
   </execution_semantics>
   <properties>
     <property name="APIName" type="string">MicrosoftKinect</property>
-    <property name="Width" type="int">640</property>
-    <property name="Height" type="int">480</property>
+
+    <property name="ColorWidth" type="int">640</property>
+    <property name="ColorHeight" type="int">480</property>
+    <property name="DepthWidth" type="int">640</property>
+    <property name="DepthHeight" type="int">480</property>
+
     <property name="KinectIndex" type="int">0</property>
     <property name="NearMode" type="bool">false</property>
-    <property name="SkeletonTrackingMode" type="bool">true</property>
+    <property name="SkeletonTrackingMode" type="bool">false</property>
   </properties>
   <data_type_list />
   <defined_data_types />
