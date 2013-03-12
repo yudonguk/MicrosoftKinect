@@ -740,11 +740,17 @@ CANT_USE_SSE2:
 extern "C"
 {
 	__declspec(dllexport) OprosApi *GetAPI();
+	__declspec(dllexport) void ReleaseAPI(OprosApi* pOprosApi);
 }
 
 OprosApi *GetAPI()
 {
 	return new MicrosoftKinect();
+}
+
+void ReleaseAPI( OprosApi* pOprosApi )
+{
+	delete pOprosApi;
 }
 
 //Undefine Required Profile Name List
