@@ -519,7 +519,7 @@ int MicrosoftKinect::GetImage( ImageFrame& image )
 	}
 
 	NUI_IMAGE_FRAME imageFrame;
-	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleColorStream, 30
+	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleColorStream, 0
 		, &imageFrame)))
 	{
 		OprosLockHelper lock(mLockTempImageFrame);
@@ -608,7 +608,7 @@ int MicrosoftKinect::GetDepthImage( DepthFrame& depth )
 	}
 
 	NUI_IMAGE_FRAME imageFrame;
-	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleDepthStream, 30
+	if (FAILED(mpNuiSensor->NuiImageStreamGetNextFrame(mHandleDepthStream, 0
 		, &imageFrame)))
 	{
 		return API_ERROR;
