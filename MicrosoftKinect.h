@@ -3,7 +3,7 @@
 
 #include <windows.h>
 #include <NuiApi.h>
-#include <OprosLock.h>
+#include <device/OprosLock.h>
 
 #include "Kinect.h"
 
