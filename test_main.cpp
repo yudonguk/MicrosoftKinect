@@ -1,8 +1,8 @@
-#ifdef TEST_BUILD
+﻿#ifdef TEST_BUILD
 
 #include <iostream>
-#include <Property.h>
-#include <OprosMath.h>
+#include <device/Property.h>
+#include <device/OprosMath.h>
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -10,9 +10,9 @@
 #include "MicroSoftKinect.h"
 #include "debug_macro.h"
 
-Property GetProperty()
+OPRoS::Property GetProperty()
 {
-	Property property;
+	OPRoS::Property property;
 
 	property.SetValue("ColorWidth", "640");
 	property.SetValue("ColorHeight", "480");
@@ -51,7 +51,7 @@ int main()
 
 	ImageFrame imageFrame;
 	DepthFrame depthFrame;
-	vector<Skeleton> skeletons;
+	std::vector<Skeleton> skeletons;
 
 	while(kinect.GetImage(imageFrame) != API_SUCCESS || kinect.GetDepthImage(depthFrame) != API_SUCCESS)
 	{

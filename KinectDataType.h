@@ -1,32 +1,35 @@
-#ifndef __KINECT_DATA_TYPE_H__
+﻿#ifndef __KINECT_DATA_TYPE_H__
 #define __KINECT_DATA_TYPE_H__
 
 #include <cstdint>
 #include <vector>
+#include <memory>
 
 #include <archive/opros_archive.h>
-#include <opros_smart_ptr.h>
-
-using std::vector;
 
 class ImageFrame
 {
 public:
 	enum Type{BGR8 = 0, RGB8 = 1};
 
-	ImageFrame(unsigned int width_ = 0, unsigned int height_ = 0
-		, Type type_ = RGB8, opros::smart_ptr<const vector<uint8_t>> data_ = NULL)
+	ImageFrame(uint32_t width_ = 0, uint32_t height_ = 0
+		, Type type_ = RGB8, std::shared_ptr<std::vector<uint8_t> const> data_ = NULL)
 		: width(width_), height(height_), type(type_), data(data_)
 	{}
 
-	unsigned int width;
-	unsigned int height;
+	uint32_t width;
+	uint32_t height;
 	Type type;
-	opros::smart_ptr<const vector<uint8_t>> data;
+	std::shared_ptr<std::vector<uint8_t> const> data;
 
-	void save(opros::archive::oarchive& ar, const unsigned int)
+	inline bool isValid()
 	{
-		bool isValidData = (data.isNULL() == false);
+		return data.get() != NULL && width != 0 && height != 0;
+	}
+
+	void save(opros::archive::oarchive& ar, unsigned int const)
+	{
+		bool isValidData = isValid();
 
 		ar << width << height << type << isValidData;
 
@@ -34,7 +37,7 @@ public:
 			ar << *data;
 	}
 
-	void load(opros::archive::iarchive& ar, const unsigned int)
+	void load(opros::archive::iarchive& ar, unsigned int const)
 	{
 		bool isValidData = false;
 
@@ -42,13 +45,14 @@ public:
 
 		if (isValidData)
 		{
-			vector<uint8_t>* pData = new vector<uint8_t>();
+			std::unique_ptr<std::vector<uint8_t>> pData(new std::vector<uint8_t>());
 			ar >> *pData;
-			data = pData;
+
+			data.reset(pData.release());
 		}
 		else
 		{
-			data = NULL;
+			data.reset();
 		}		
 	}
 };
@@ -60,18 +64,23 @@ inline std::string typeName(ImageFrame *p)
 class DepthFrame
 {
 public:
-	DepthFrame(unsigned int width_ = 0, unsigned int height_ = 0
-		, opros::smart_ptr<const vector<uint16_t>> data_ = NULL)
+	DepthFrame(uint32_t width_ = 0, unsigned int height_ = 0
+		, std::shared_ptr<std::vector<uint16_t> const> data_ = NULL)
 		: width(width_), height(height_), data(data_)
 	{}
 
-	unsigned int width;
-	unsigned int height;
-	opros::smart_ptr<const vector<uint16_t>> data;	
+	uint32_t width;
+	uint32_t height;
+	std::shared_ptr<std::vector<uint16_t> const> data;	
 
-	void save(opros::archive::oarchive& ar, const unsigned int)
+	inline bool isValid()
 	{
-		bool isValidData = (data.isNULL() == false);
+		return data.get() != NULL && width != 0 && height != 0;
+	}
+
+	void save(opros::archive::oarchive& ar, unsigned int const)
+	{
+		bool isValidData = isValid();
 
 		ar << width << height << isValidData;
 
@@ -79,7 +88,7 @@ public:
 			ar << *data;
 	}
 
-	void load(opros::archive::iarchive& ar, const unsigned int)
+	void load(opros::archive::iarchive& ar, unsigned int const)
 	{
 		bool isValidData = false;
 
@@ -87,13 +96,14 @@ public:
 
 		if (isValidData)
 		{
-			vector<uint16_t>* pData = new vector<uint16_t>();
+			std::unique_ptr<std::vector<uint16_t>> pData(new std::vector<uint16_t>());
 			ar >> *pData;
-			data = pData;
+
+			data.reset(pData.release());
 		}
 		else
 		{
-			data = NULL;
+			data.reset();
 		}		
 	}
 };
@@ -113,12 +123,12 @@ public:
 	float y; 
 	float z;
 
-	void save(opros::archive::oarchive& ar, const unsigned int)
+	void save(opros::archive::oarchive& ar, unsigned int const)
 	{
 		ar << x << y << z;
 	}
 
-	void load(opros::archive::iarchive& ar, const unsigned int)
+	void load(opros::archive::iarchive& ar, unsigned int const)
 	{
 		ar >> x >> y >> z;
 	}
@@ -137,22 +147,22 @@ public:
 		HAND_LEFT=7, SHOULDER_RIGHT=8, ELBOW_RIGHT=9, WRIST_RIGHT=10,HAND_RIGHT=11, HIP_LEFT=12, KNEE_LEFT=13, ANKLE_LEFT=14,
 		FOOT_LEFT=15, HIP_RIGHT=16, KNEE_RIGHT=17, ANKLE_RIGHT=18,FOOT_RIGHT=19 ,JOINT_COUNT = 20};
 
-	Skeleton(unsigned long userID_ = 0, Result result_ = NOT_TRACKED)
+	Skeleton(uint32_t userID_ = 0, Result result_ = NOT_TRACKED)
 		: userID(userID_), result(result_)
 	{}
 
-	unsigned long userID;
+	uint32_t userID;
 	Result result;
 
 	Position position;
 	Position joints[JOINT_COUNT];
 
-	void save(opros::archive::oarchive& ar, const unsigned int)
+	void save(opros::archive::oarchive& ar, unsigned int const)
 	{
 		ar << userID << result << position << joints;
 	}
 
-	void load(opros::archive::iarchive& ar, const unsigned int)
+	void load(opros::archive::iarchive& ar, unsigned int const)
 	{
 		ar >> userID >> result >> position >> joints;
 	}
@@ -173,7 +183,7 @@ public:
 	{}
 
 	State state; 
-	vector<unsigned long> userIDs;
+	std::vector<uint32_t> userIDs;
 
 	void save(opros::archive::oarchive& ar, const unsigned int)
 	{

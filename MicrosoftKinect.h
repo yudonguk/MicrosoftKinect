@@ -1,4 +1,4 @@
-#ifndef __MICROSOFT_KINECT_H__
+﻿#ifndef __MICROSOFT_KINECT_H__
 #define __MICROSOFT_KINECT_H__
 
 #include <windows.h>
@@ -14,35 +14,36 @@ public:
 	virtual ~MicrosoftKinect();
 
 public:
-	int Initialize(Property parameter);
-	int Finalize(void);
-	int Enable(void);
-	int Disable(void);
-	int SetParameter(Property parameter);
-	int GetParameter(Property &parameter);
+	int32_t Initialize(OPRoS::Property parameter);
+	int32_t Finalize(void);
+	int32_t Enable(void);
+	int32_t Disable(void);
+	int32_t SetProperty(OPRoS::Property parameter);
+	int32_t GetProperty(OPRoS::Property &parameter);
 
 public:
-	int SetCameraAngle(float degree);
-	int GetCameraAngle(float& degree);
-	int GetSkeleton(vector<Skeleton>& output);
-	int GetSkeleton(Skeleton& output, unsigned long id);
-	int GetSkeletonID(vector<unsigned long>& output);
-	int GetImage(ImageFrame& image);
-	int GetDepthImage(DepthFrame& depth);
+	int32_t SetCameraAngle(float degree);
+	int32_t GetCameraAngle(float& degree);
+	int32_t GetSkeleton(std::vector<Skeleton>& output);
+	int32_t GetSkeleton(Skeleton& output, uint32_t id);
+	int32_t GetSkeletonID(std::vector<uint32_t>& output);
+	int32_t GetImage(ImageFrame& image);
+	int32_t GetDepthImage(DepthFrame& depth);
 
 private:
-	bool SetKinectProfile(Property& property);
+	bool SetKinectProfile(OPRoS::Property& property);
 	void TransformSkeletonToDepthImage(Position& result, const Vector4& skeletonPosition);
 	bool GetSKeletonNextFrame();
-	void ConvertNuiDepthToDepth(vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount);
-	void ConvertNuiDepthToDepthUsingSSE(vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount);
 	void InitDepthConverter();
 
+	static void ConvertNuiDepthToDepth(std::vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount);
+	static void ConvertNuiDepthToDepthUsingSSE(std::vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount);
+
 private:
-	void (MicrosoftKinect::*depthConverter)(vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount);
+	void (*mDepthConverter)(std::vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount);
 
 	OprosLock mLockSkeletonList;
-	vector<Skeleton> mSkeletonList;
+	std::vector<Skeleton> mSkeletonList;
 
 	INuiSensor* mpNuiSensor;
 

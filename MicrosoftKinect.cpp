@@ -1,11 +1,11 @@
-#include "MicrosoftKinect.h"
+Ôªø#include "MicrosoftKinect.h"
 
 #include <iostream>
 #include <emmintrin.h>
 #include <limits>
 
-#include <OprosPrintMessage.h>
-#include <OprosMath.h>
+#include <device/OprosPrintMessage.h>
+#include <device/OprosMath.h>
 
 #include "debug_macro.h"
 #include "OprosLockHelper.h"
@@ -41,7 +41,7 @@ MicrosoftKinect::~MicrosoftKinect()
 }
 
 
-int MicrosoftKinect::Initialize( Property parameter )
+int32_t MicrosoftKinect::Initialize(OPRoS::Property parameter)
 {	
 	if (mpNuiSensor != NULL)
 	{
@@ -62,7 +62,7 @@ int MicrosoftKinect::Initialize( Property parameter )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::Finalize( void )
+int32_t MicrosoftKinect::Finalize(void)
 {
 	if (mpNuiSensor != NULL)
 	{
@@ -77,7 +77,7 @@ int MicrosoftKinect::Finalize( void )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::Enable( void )
+int32_t MicrosoftKinect::Enable(void)
 {
 	if (mpNuiSensor != NULL)
 	{
@@ -150,7 +150,7 @@ int MicrosoftKinect::Enable( void )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::Disable( void )
+int32_t MicrosoftKinect::Disable(void)
 {
 	if (mpNuiSensor != NULL)
 	{
@@ -165,7 +165,7 @@ int MicrosoftKinect::Disable( void )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::SetParameter( Property parameter )
+int32_t MicrosoftKinect::SetProperty(OPRoS::Property parameter)
 {
 	if (Disable() != API_SUCCESS)
 	{
@@ -188,7 +188,7 @@ int MicrosoftKinect::SetParameter( Property parameter )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::GetParameter( Property &parameter )
+int32_t MicrosoftKinect::GetProperty(OPRoS::Property &parameter)
 {
 	std::ostringstream stringConverter;
 
@@ -223,7 +223,7 @@ int MicrosoftKinect::GetParameter( Property &parameter )
 	return API_SUCCESS;
 }
 
-bool MicrosoftKinect::SetKinectProfile( Property& parameter )
+bool MicrosoftKinect::SetKinectProfile( OPRoS::Property& parameter )
 {
 	int colorWidth = 640;
 	int colorHeight = 480;
@@ -313,28 +313,28 @@ bool MicrosoftKinect::SetKinectProfile( Property& parameter )
 
 	PrintMessage("--------------------------------\r\n");
 
-	return true; //√ ±‚»≠ º∫∞¯«— ∞ÊøÏ
+	return true; //Ï¥àÍ∏∞Ìôî ÏÑ±Í≥µÌïú Í≤ΩÏö∞
 }
 
 void MicrosoftKinect::TransformSkeletonToDepthImage(Position& result, const Vector4& skeletonPosition )
 {
 	NuiTransformSkeletonToDepthImage(skeletonPosition, &result.x, &result.y, mNuiDepthResoultion);
-	result.z = skeletonPosition.z * 1000.0f; //m¥‹¿ß∏¶ mm¥‹¿ß∑Œ ∫Ø∞Ê
+	result.z = skeletonPosition.z * 1000.0f; //mÎã®ÏúÑÎ•º mmÎã®ÏúÑÎ°ú Î≥ÄÍ≤Ω
 }
 
 bool MicrosoftKinect::GetSKeletonNextFrame()
 {
 	NUI_SKELETON_FRAME skeletonFrame;
 
-	//Ω∫ƒÃ∑π≈Ê ¡§∫∏ πﬁæ∆ø¿±‚
+	//Ïä§ÏºàÎ†àÌÜ§ Ï†ïÎ≥¥ Î∞õÏïÑÏò§Í∏∞
 	if (mIsSkeletonTrackingMode == false
 		|| FAILED(mpNuiSensor->NuiSkeletonGetNextFrame(10, &skeletonFrame)))
 	{
 		return false;
 	}
 
-	//Ω∫ƒÃ∑π≈Ê¿« ∞¢ ¡∂¿Œ∆Æ ¡§∫∏∏¶ ±∏¡∂√ºø°
-	vector<Skeleton> tempSkeleton;
+	//Ïä§ÏºàÎ†àÌÜ§Ïùò Í∞Å Ï°∞Ïù∏Ìä∏ Ï†ïÎ≥¥Î•º Íµ¨Ï°∞Ï≤¥Ïóê
+	std::vector<Skeleton> tempSkeleton;
 	tempSkeleton.reserve(NUI_SKELETON_COUNT);
 
 	mpNuiSensor->NuiTransformSmooth(&skeletonFrame, NULL);
@@ -395,7 +395,7 @@ bool MicrosoftKinect::GetSKeletonNextFrame()
 	return true;
 }
 
-int MicrosoftKinect::SetCameraAngle( float degree )
+int32_t MicrosoftKinect::SetCameraAngle(float degree)
 {
 	if (mpNuiSensor == NULL)
 	{
@@ -406,7 +406,7 @@ int MicrosoftKinect::SetCameraAngle( float degree )
 	LONG elevationAngleValue = bound(INTEGER(degree)
 		, NUI_CAMERA_ELEVATION_MINIMUM, NUI_CAMERA_ELEVATION_MAXIMUM);
 
-	//ƒ´∏ﬁ∂Û¿« ∞¢µµ πŸ≤„¡÷¥¬ «‘ºˆ
+	//Ïπ¥Î©îÎùºÏùò Í∞ÅÎèÑ Î∞îÍøîÏ£ºÎäî Ìï®Ïàò
 	if (FAILED(mpNuiSensor->NuiCameraElevationSetAngle(elevationAngleValue)))
 	{
 		PrintMessage(DEBUG_MESSAGE("Can't set camera angle.").c_str());
@@ -416,7 +416,7 @@ int MicrosoftKinect::SetCameraAngle( float degree )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::GetCameraAngle(float& degree ) 
+int32_t MicrosoftKinect::GetCameraAngle(float& degree)
 {
 	if (mpNuiSensor == NULL)
 	{
@@ -437,7 +437,7 @@ int MicrosoftKinect::GetCameraAngle(float& degree )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::GetSkeleton( vector<Skeleton>& output )
+int32_t MicrosoftKinect::GetSkeleton(std::vector<Skeleton>& output)
 {
 	if (mpNuiSensor == NULL)
 	{
@@ -456,7 +456,7 @@ int MicrosoftKinect::GetSkeleton( vector<Skeleton>& output )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::GetSkeleton( Skeleton& output, unsigned long id )
+int32_t MicrosoftKinect::GetSkeleton(Skeleton& output, uint32_t id)
 {
 	if (mpNuiSensor == NULL)
 	{
@@ -486,7 +486,7 @@ int MicrosoftKinect::GetSkeleton( Skeleton& output, unsigned long id )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::GetSkeletonID( vector<unsigned long>& output )
+int32_t MicrosoftKinect::GetSkeletonID(std::vector<uint32_t>& output)
 {
 	if (mpNuiSensor == NULL)
 	{
@@ -510,7 +510,7 @@ int MicrosoftKinect::GetSkeletonID( vector<unsigned long>& output )
 	return API_SUCCESS;	
 }
 
-int MicrosoftKinect::GetImage( ImageFrame& image )
+int32_t MicrosoftKinect::GetImage(ImageFrame& image)
 {
 	if (mpNuiSensor == NULL)
 	{
@@ -523,8 +523,7 @@ int MicrosoftKinect::GetImage( ImageFrame& image )
 		, &imageFrame)))
 	{
 		OprosLockHelper lock(mLockTempImageFrame);
-		if (mTempImageFrame.width == 0 || mTempImageFrame.height == 0
-			|| mTempImageFrame.data.isNULL())
+		if (!mTempImageFrame.isValid())
 		{
 			return API_ERROR;
 		}
@@ -547,8 +546,7 @@ int MicrosoftKinect::GetImage( ImageFrame& image )
 		mpNuiSensor->NuiImageStreamReleaseFrame(mHandleColorStream, &imageFrame);
 
 		OprosLockHelper lock(mLockTempImageFrame);
-		if (mTempImageFrame.width == 0 || mTempImageFrame.height == 0
-			|| mTempImageFrame.data.isNULL())
+		if (!mTempImageFrame.isValid())
 		{
 			return API_ERROR;
 		}
@@ -564,19 +562,19 @@ int MicrosoftKinect::GetImage( ImageFrame& image )
 
 	image.width = width;
 	image.height = height;
-	image.type =ImageFrame::BGR8;
-	image.data = new vector<uint8_t>();
+	image.type = ImageFrame::BGR8;
+	image.data.reset(new std::vector<uint8_t>());
 
 	const size_t outImagePixelByte = 3;
 	const size_t outImageSize = width * height * outImagePixelByte;
-	vector<uint8_t>& outImage = const_cast<vector<uint8_t>&>(*image.data);
+	std::vector<uint8_t>& outImage = const_cast<std::vector<uint8_t>&>(*image.data);
 
-	//1πŸ¿Ã∆Æ¥¬ ∫πªÁº”µµ«‚ªÛ¿ª ¿ß«— πÊπ˝ø°º≠ πﬂª˝«“ ºˆ ¿÷¥¬
-	//Out Of Index ø¿∑˘∏¶ ∏∑±‚ ¿ß«— ∞¯∞£¿∏∑Œ ≥™¡ﬂø° ¿Ã 1πŸ¿Ã∆Æ∏¶ ªË¡¶«—¥Ÿ.
+	//1Î∞îÏù¥Ìä∏Îäî Î≥µÏÇ¨ÏÜçÎèÑÌñ•ÏÉÅÏùÑ ÏúÑÌïú Î∞©Î≤ïÏóêÏÑú Î∞úÏÉùÌï† Ïàò ÏûàÎäî
+	//Out Of Index Ïò§Î•òÎ•º ÎßâÍ∏∞ ÏúÑÌïú Í≥µÍ∞ÑÏúºÎ°ú ÎÇòÏ§ëÏóê Ïù¥ 1Î∞îÏù¥Ìä∏Î•º ÏÇ≠Ï†úÌïúÎã§.
 	outImage.resize(outImageSize + 1); 
 
-	//Kinect∑Œ ∫Œ≈Õ ≥™ø¿¥¬ ¿ÃπÃ¡ˆ¿« «— «»ºø¿« ≈©±‚¥¬ 4
-	//[0] = B, [1] = G, [2] = R, [3] = A ¿Ã¥Ÿ.
+	//KinectÎ°ú Î∂ÄÌÑ∞ ÎÇòÏò§Îäî Ïù¥ÎØ∏ÏßÄÏùò Ìïú ÌîΩÏÖÄÏùò ÌÅ¨Í∏∞Îäî 4
+	//[0] = B, [1] = G, [2] = R, [3] = A Ïù¥Îã§.
 	const size_t inImagePixeByte = 4;
 	BYTE* pImageBuffer = lockedRect.pBits;	
 
@@ -599,7 +597,7 @@ int MicrosoftKinect::GetImage( ImageFrame& image )
 	return API_SUCCESS;
 }
 
-int MicrosoftKinect::GetDepthImage( DepthFrame& depth )
+int32_t MicrosoftKinect::GetDepthImage(DepthFrame& depth)
 {   
 	if (mpNuiSensor == NULL)
 	{
@@ -613,8 +611,7 @@ int MicrosoftKinect::GetDepthImage( DepthFrame& depth )
 	{
 		return API_ERROR;
 		OprosLockHelper lock(mLockTempDepthFrame);
-		if (mTempDepthFrame.width == 0 || mTempDepthFrame.height == 0
-			|| mTempDepthFrame.data.isNULL())
+		if (!mTempDepthFrame.isValid())
 		{
 			return API_ERROR;
 		}
@@ -637,8 +634,7 @@ int MicrosoftKinect::GetDepthImage( DepthFrame& depth )
 		mpNuiSensor->NuiImageStreamReleaseFrame(mHandleDepthStream, &imageFrame);
 		return API_ERROR;
 		OprosLockHelper lock(mLockTempDepthFrame);
-		if (mTempDepthFrame.width == 0 || mTempDepthFrame.height == 0
-			|| mTempDepthFrame.data.isNULL())
+		if (!mTempDepthFrame.isValid())
 		{
 			return API_ERROR;
 		}
@@ -654,11 +650,11 @@ int MicrosoftKinect::GetDepthImage( DepthFrame& depth )
 
 	depth.width = width;
 	depth.height = height;
-	depth.data = new vector<uint16_t>();
+	depth.data.reset(new std::vector<uint16_t>());
 
-	vector<uint16_t>& outImage = const_cast<vector<uint16_t>&>(*depth.data);
+	std::vector<uint16_t>& outImage = const_cast<std::vector<uint16_t>&>(*depth.data);
 
-	(this->*depthConverter)(outImage, (USHORT*)lockedRect.pBits, width * height);
+	mDepthConverter(outImage, (USHORT*)lockedRect.pBits, width * height);
 
 	pFrameTexture->UnlockRect(0);
 	mpNuiSensor->NuiImageStreamReleaseFrame(mHandleDepthStream, &imageFrame);
@@ -670,7 +666,7 @@ int MicrosoftKinect::GetDepthImage( DepthFrame& depth )
 	return API_SUCCESS;
 }
 
-void MicrosoftKinect::ConvertNuiDepthToDepth( vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount )
+void MicrosoftKinect::ConvertNuiDepthToDepth( std::vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount )
 {
 	output.resize(maxCount);
 
@@ -684,7 +680,7 @@ void MicrosoftKinect::ConvertNuiDepthToDepth( vector<uint16_t>& output, USHORT* 
 	}
 }
 
-void MicrosoftKinect::ConvertNuiDepthToDepthUsingSSE( vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount )
+void MicrosoftKinect::ConvertNuiDepthToDepthUsingSSE( std::vector<uint16_t>& output, USHORT* pNuiDepth, const size_t maxCount )
 {
 	output.resize(maxCount);
 
@@ -716,11 +712,11 @@ void MicrosoftKinect::InitDepthConverter()
 
 	__asm
 	{
-		mov eax, 1;				//«¡∑ŒººΩ∫ ¡§∫∏ π◊ ±‚¥…
-		CPUID					//CPUID »£√‚
+		mov eax, 1;				//ÌîÑÎ°úÏÑ∏Ïä§ Ï†ïÎ≥¥ Î∞è Í∏∞Îä•
+		CPUID					//CPUID Ìò∏Ï∂ú
 
 		mov [isUsableSSE2], 0
-		test edx, 04000000h		//π›»Ø∞™¿Ã SSE2∏¶ ¡ˆø¯«œ¥¬¡ˆ »Æ¿Œ
+		test edx, 04000000h		//Î∞òÌôòÍ∞íÏù¥ SSE2Î•º ÏßÄÏõêÌïòÎäîÏßÄ ÌôïÏù∏
 		jz CANT_USE_SSE2
 		mov [isUsableSSE2], 1
 
@@ -729,26 +725,26 @@ CANT_USE_SSE2:
 
 	if (isUsableSSE2)
 	{
-		depthConverter = &MicrosoftKinect::ConvertNuiDepthToDepthUsingSSE;
+		mDepthConverter = &MicrosoftKinect::ConvertNuiDepthToDepthUsingSSE;
 	}
 	else
 	{
-		depthConverter = &MicrosoftKinect::ConvertNuiDepthToDepth;
+		mDepthConverter = &MicrosoftKinect::ConvertNuiDepthToDepth;
 	}
 }
 
 extern "C"
 {
-	__declspec(dllexport) OprosApi *GetAPI();
-	__declspec(dllexport) void ReleaseAPI(OprosApi* pOprosApi);
+	__declspec(dllexport) OprosDevice *GetAPI();
+	__declspec(dllexport) void ReleaseAPI(OprosDevice* pOprosApi);
 }
 
-OprosApi *GetAPI()
+OprosDevice *GetAPI()
 {
 	return new MicrosoftKinect();
 }
 
-void ReleaseAPI( OprosApi* pOprosApi )
+void ReleaseAPI(OprosDevice* pOprosApi)
 {
 	delete pOprosApi;
 }

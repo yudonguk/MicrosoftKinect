@@ -1,4 +1,4 @@
-#ifndef __DEBUG_MACRO_H__
+﻿#ifndef __DEBUG_MACRO_H__
 #define __DEBUG_MACRO_H__
 
 #include <string>

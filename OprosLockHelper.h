@@ -1,7 +1,7 @@
-#ifndef __OPROS_LOCK_HELPER_H__
+﻿#ifndef __OPROS_LOCK_HELPER_H__
 #define __OPROS_LOCK_HELPER_H__
 
-#include <OprosLock.h>
+#include <device/OprosLock.h>
 
 class OprosLockHelper
 {
